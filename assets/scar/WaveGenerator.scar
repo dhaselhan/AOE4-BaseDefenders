@@ -1,0 +1,398 @@
+import("Utils.scar")
+
+local STARTING_BUDGET = 120
+local BUDGET_PER_WAVE = 60
+
+local DIFFICULTY_MULT = {
+    Easy = 0.85,
+    Normal = 1.00,
+    Hard = 1.30
+}
+
+local COMPOSITION_TARGETS = {
+	[1] =  {Melee = 1.00, Ranged = 0.00, Cavalry = 0.00, Ram  = 0.00, Siege = 0.00},
+    [2] =  {Melee = 0.55, Ranged = 0.25, Cavalry = 0.10, Ram  = 0.10, Siege = 0.00},
+    [3] =  {Melee = 0.35, Ranged = 0.30, Cavalry = 0.25, Ram  = 0.10, Siege = 0.10},
+    [4] =  {Melee = 0.25, Ranged = 0.25, Cavalry = 0.25, Ram  = 0.12, Siege = 0.13}
+}
+
+local ROLE_CAPS = {
+    Cavalry = 0.45,  -- cap cavalry at most 45% of budget
+    Siege = 0.30     -- cap seige at 30% of budget
+}
+
+local ROLE_COSTS = {
+    Melee = 40,
+    Ranged = 50,
+    Cavalry = 70,
+    Ram  = 120,
+    Siege = 240,
+}
+
+
+
+function WaveGenerator_GenerateSBPTable(waveNumber, tier, civ)
+	local budget = WaveGenerator_CalculateBudget(waveNumber)
+	print("Budget calculated " .. tostring(budget))
+	local role_targets, role_caps = WaveGenerator_ComputeRoleBudgets(budget, tier)
+	print("-- Targets --")
+	PrintTable(role_targets)
+	print("-- Caps --")
+	PrintTable(role_caps)
+	
+	local role_pool = WaveGenerator_GetAllowedUnitsForTier(tier)
+	print("-- Role Pool --")
+	PrintTable(role_pool)
+	
+	local wave_unit_list = WaveGenerator_BuildWaveRoleList(budget, tier, role_pool, role_targets, role_caps, civ)
+	
+	-- To Spawn Multiple": { sbp = sbp, numSquads = count }, { sbp = sbp, numSquads = count }
+	return wave_unit_list
+end
+
+function WaveGenerator_CalculateBudget(waveNumber)
+	local difficulty_mult = 1 -- TODO
+
+    local base = STARTING_BUDGET + (BUDGET_PER_WAVE * waveNumber)
+    local milestone = (waveNumber % 5 == 0) and 1.15 or 1.0 -- add larger waves at 5,10,...
+    local variance = RandomFloat(0.95, 1.05)        -- small variation
+
+    local budget = base * milestone * variance * difficulty_mult
+    return math.floor(budget + 0.5)
+end
+
+function WaveGenerator_ComputeRoleBudgets(budget, tier)
+    local targets = COMPOSITION_TARGETS[tier]
+    local role_ep_goal = {}
+    local role_ep_cap = {}
+
+    for role, pct in pairs(targets) do
+        role_ep_goal[role] = math.floor(budget * pct + 0.5)
+
+        -- apply caps if this role is limited
+        if ROLE_CAPS[role] then
+            role_ep_cap[role] = math.floor(budget * ROLE_CAPS[role] + 0.5)
+        else
+            role_ep_cap[role] = math.huge -- no cap
+        end
+    end
+
+    return role_ep_goal, role_ep_cap
+end
+
+function WaveGenerator_BuildWaveRoleList(budget, tier, role_pool, role_targets, role_caps, civ)
+	local role_used = {Melee = 0, Ranged = 0, Cavalry = 0, Ram = 0, Siege = 0}
+    local wave_counts = {}  -- intermediate format: unit_name -> count
+    local budget_left = budget
+
+    while budget_left >= 40 do
+        local weights = {}
+		
+		-- Pick a random role
+		local chosen_role = TableRandom(role_pool)
+		print("Chosen Role " .. tostring(chosen_role))
+		local role_cost = ROLE_COSTS[chosen_role]
+		
+		budget_left = budget_left - role_cost
+		wave_counts[chosen_role] = (wave_counts[chosen_role] or 0) + 1
+    end
+	
+	print("Wave Counts")
+	PrintTable(wave_counts)
+
+	-- Convert to SBP format:
+	local wave_output = {}
+	for unit_role, count in pairs(wave_counts) do
+		local result = getSquadBlueprint(unit_role, tier, civ, count)
+		for _, squad in ipairs(result) do
+			table.insert(wave_output, squad)
+		end
+	end
+	
+	return wave_output
+end
+
+function WaveGenerator_GetAllowedUnitsForTier(tier)
+	if tier == 1 then
+		return { "Melee" }
+
+	elseif tier == 2 then
+		return { "Melee", "Ranged", "Cavalry" }
+
+	elseif tier == 3 then
+		return { "Melee", "Ranged", "Cavalry", "Ram" } 
+
+	elseif tier == 4 then
+		return {
+			"Melee", "Ranged", "Cavalry", "Ram", "Siege"
+		}
+	end
+	
+	return {}
+end
+
+local UNIT_MAP  = {
+	Melee = {
+		abbasid = {
+			[1]={SBP.ABBASID.UNIT_SPEARMAN_1_ABB},
+			[2]={SBP.ABBASID.UNIT_SPEARMAN_2_ABB},
+			[3]={SBP.ABBASID.UNIT_SPEARMAN_3_ABB, SBP.ABBASID.UNIT_MANATARMS_3_ABB, SBP.ABBASID.UNIT_KNIGHT_4_ABB},
+			[4]={SBP.ABBASID.UNIT_SPEARMAN_4_ABB, SBP.ABBASID.UNIT_MANATARMS_4_ABB, SBP.ABBASID.UNIT_KNIGHT_3_ABB},
+		},
+		byzantine = {
+			[1]={SBP.BYZANTINE.UNIT_SPEARMAN_1_BYZ},
+			[2]={SBP.BYZANTINE.UNIT_SPEARMAN_2_BYZ},
+			[3]={SBP.BYZANTINE.UNIT_SPEARMAN_3_BYZ, SBP.BYZANTINE.UNIT_MANATARMS_3_BYZ, SBP.BYZANTINE.UNIT_KNIGHT_3_BYZ, SBP.BYZANTINE.UNIT_GHULAM_3_MERC_BYZ},
+			[4]={SBP.BYZANTINE.UNIT_SPEARMAN_4_BYZ, SBP.BYZANTINE.UNIT_MANATARMS_4_BYZ, SBP.BYZANTINE.UNIT_KNIGHT_4_BYZ, SBP.BYZANTINE.UNIT_GHULAM_4_MERC_BYZ},
+		},
+		chinese = {
+			[1]={SBP.CHINESE.UNIT_SPEARMAN_1_CHI},
+			[2]={SBP.CHINESE.UNIT_SPEARMAN_2_CHI},
+			[3]={SBP.CHINESE.UNIT_SPEARMAN_3_CHI, SBP.CHINESE.UNIT_MANATARMS_3_CHI, SBP.CHINESE.UNIT_KNIGHT_3_CHI},
+			[4]={SBP.CHINESE.UNIT_SPEARMAN_4_CHI, SBP.CHINESE.UNIT_MANATARMS_4_CHI, SBP.CHINESE.UNIT_KNIGHT_4_CHI},
+		},
+		english = {
+			[1]={SBP.ENGLISH.UNIT_MANATARMS_1_ENG},
+			[2]={SBP.ENGLISH.UNIT_SPEARMAN_2_ENG, SBP.ENGLISH.UNIT_MANATARMS_2_ENG},
+			[3]={SBP.ENGLISH.UNIT_SPEARMAN_3_ENG, SBP.ENGLISH.UNIT_MANATARMS_3_ENG, SBP.ENGLISH.UNIT_KNIGHT_3_ENG},
+			[4]={SBP.ENGLISH.UNIT_SPEARMAN_4_ENG, SBP.ENGLISH.UNIT_MANATARMS_4_ENG, SBP.ENGLISH.UNIT_KNIGHT_4_ENG},
+		},
+		french = {
+			[1]={SBP.FRENCH.UNIT_SPEARMAN_1_FRE},
+			[2]={SBP.FRENCH.UNIT_SPEARMAN_2_FRE, SBP.FRENCH.UNIT_KNIGHT_2_FRE},
+			[3]={SBP.FRENCH.UNIT_SPEARMAN_3_FRE, SBP.FRENCH.UNIT_KNIGHT_3_FRE, SBP.FRENCH.UNIT_MANATARMS_3_FRE},
+			[4]={SBP.FRENCH.UNIT_SPEARMAN_4_FRE, SBP.FRENCH.UNIT_KNIGHT_4_FRE, SBP.FRENCH.UNIT_MANATARMS_4_FRE},
+		},
+		japanese = {
+			[1]={SBP.JAPANESE.UNIT_SPEARMAN_1_JPN, SBP.JAPANESE.UNIT_SAMURAI_1_JPN},
+			[2]={SBP.JAPANESE.UNIT_SPEARMAN_2_JPN, SBP.JAPANESE.UNIT_SAMURAI_2_JPN, SBP.JAPANESE.UNIT_ONNA_BUGEISHA_2_JPN, SBP.JAPANESE.UNIT_SHINOBI_2_JPN},
+			[3]={SBP.JAPANESE.UNIT_SPEARMAN_3_JPN, SBP.JAPANESE.UNIT_SAMURAI_3_JPN, SBP.JAPANESE.UNIT_ONNA_BUGEISHA_3_JPN, SBP.JAPANESE.UNIT_BANNER_SAMURAI_MELEE_3_JPN, SBP.JAPANESE.UNIT_KNIGHT_3_JPN},
+			[4]={SBP.JAPANESE.UNIT_SPEARMAN_4_JPN, SBP.JAPANESE.UNIT_SAMURAI_4_JPN, SBP.JAPANESE.UNIT_ONNA_BUGEISHA_4_JPN, SBP.JAPANESE.UNIT_BANNER_SAMURAI_MELEE_4_JPN, SBP.JAPANESE.UNIT_KNIGHT_4_JPN},
+		},
+		malian = {
+			[1]={SBP.MALIAN.UNIT_SPEARMAN_1_MAL},
+			[2]={SBP.MALIAN.UNIT_SPEARMAN_2_MAL, SBP.MALIAN.UNIT_MANSA_MUSOFADI_2_MAL, SBP.MALIAN.UNIT_GBETO_2_MAL},
+			[3]={SBP.MALIAN.UNIT_SPEARMAN_3_MAL, SBP.MALIAN.UNIT_MANSA_MUSOFADI_3_MAL, SBP.MALIAN.UNIT_GBETO_3_MAL},
+			[4]={SBP.MALIAN.UNIT_SPEARMAN_4_MAL, SBP.MALIAN.UNIT_MANSA_MUSOFADI_4_MAL, SBP.MALIAN.UNIT_GBETO_4_MAL},
+		},
+		mongol = {
+			[1]={SBP.MONGOL.UNIT_SPEARMAN_1_MON},
+			[2]={SBP.MONGOL.UNIT_SPEARMAN_2_MON, SBP.MONGOL.UNIT_KNIGHT_2_MON},
+			[3]={SBP.MONGOL.UNIT_SPEARMAN_3_MON, SBP.MONGOL.UNIT_KNIGHT_3_MON, SBP.MONGOL.UNIT_MANATARMS_3_MON},
+			[4]={SBP.MONGOL.UNIT_SPEARMAN_4_MON, SBP.MONGOL.UNIT_KNIGHT_4_MON, SBP.MONGOL.UNIT_MANATARMS_4_MON},
+		},
+	},
+	Ranged = {
+		abbasid = {
+			[1]={},
+			[2]={SBP.ABBASID.UNIT_ARCHER_2_ABB},
+			[3]={SBP.ABBASID.UNIT_ARCHER_3_ABB, SBP.ABBASID.UNIT_CROSSBOWMAN_3_ABB},
+			[4]={SBP.ABBASID.UNIT_ARCHER_4_ABB, SBP.ABBASID.UNIT_CROSSBOWMAN_4_ABB, SBP.ABBASID.UNIT_HANDCANNON_4_ABB},
+		},
+		byzantine = {
+			[1]={},
+			[2]={SBP.BYZANTINE.UNIT_ARCHER_2_BYZ},
+			[3]={SBP.BYZANTINE.UNIT_ARCHER_3_BYZ, SBP.BYZANTINE.UNIT_CROSSBOWMAN_3_BYZ, SBP.BYZANTINE.UNIT_JAVELIN_3_MERC_BYZ, SBP.BYZANTINE.UNIT_LANDSKNECHT_3_MERC_BYZ},
+			[4]={SBP.BYZANTINE.UNIT_ARCHER_4_BYZ, SBP.BYZANTINE.UNIT_CROSSBOWMAN_4_BYZ, SBP.BYZANTINE.UNIT_JAVELIN_4_MERC_BYZ, SBP.BYZANTINE.UNIT_HANDCANNON_4_BYZ, SBP.BYZANTINE.UNIT_LONGBOWMAN_4_MERC_BYZ},
+		},
+		chinese = {
+			[1]={},
+			[2]={SBP.CHINESE.UNIT_ARCHER_2_CHI, SBP.CHINESE.UNIT_GRENADIER_2_CHI, SBP.CHINESE.UNIT_REPEATER_CROSSBOWMAN_2_CHI},
+			[3]={SBP.CHINESE.UNIT_ARCHER_3_CHI, SBP.CHINESE.UNIT_GRENADIER_3_CHI, SBP.CHINESE.UNIT_CROSSBOWMAN_3_CHI, SBP.CHINESE.UNIT_REPEATER_CROSSBOWMAN_3_CHI},
+			[4]={SBP.CHINESE.UNIT_ARCHER_4_CHI, SBP.CHINESE.UNIT_GRENADIER_4_CHI, SBP.CHINESE.UNIT_CROSSBOWMAN_4_CHI, SBP.CHINESE.UNIT_REPEATER_CROSSBOWMAN_4_CHI, SBP.CHINESE.UNIT_HANDCANNON_4_CHI},
+		},
+		english = {
+			[1]={},
+			[2]={SBP.ENGLISH.UNIT_ARCHER_2_ENG},
+			[3]={SBP.ENGLISH.UNIT_ARCHER_3_ENG, SBP.ENGLISH.UNIT_CROSSBOWMAN_3_ENG},
+			[4]={SBP.ENGLISH.UNIT_ARCHER_4_ENG, SBP.ENGLISH.UNIT_CROSSBOWMAN_4_ENG, SBP.ENGLISH.UNIT_HANDCANNON_4_ENG},
+		},
+		french = {
+			[1]={},
+			[2]={SBP.FRENCH.UNIT_ARCHER_2_FRE},
+			[3]={SBP.FRENCH.UNIT_ARCHER_3_FRE, SBP.FRENCH.UNIT_CROSSBOWMAN_3_FRE},
+			[4]={SBP.FRENCH.UNIT_ARCHER_4_FRE, SBP.FRENCH.UNIT_CROSSBOWMAN_4_FRE, SBP.FRENCH.UNIT_HANDCANNON_4_FRE},
+		},
+		japanese = {
+			[1]={},
+			[2]={SBP.JAPANESE.UNIT_ARCHER_2_JPN},
+			[3]={SBP.JAPANESE.UNIT_ARCHER_3_JPN, SBP.JAPANESE.UNIT_HORSEARCHER_3_JPN},
+			[4]={SBP.JAPANESE.UNIT_ARCHER_4_JPN, SBP.JAPANESE.UNIT_HORSEARCHER_4_JPN, SBP.JAPANESE.UNIT_HANDCANNON_4_JPN, SBP.JAPANESE.UNIT_OZUTSU_4_JPN},
+		},
+		malian = {
+			[1]={},
+			[2]={SBP.MALIAN.UNIT_ARCHER_2_MAL, SBP.MALIAN.UNIT_MANSA_JAVELIN_2_MAL},
+			[3]={SBP.MALIAN.UNIT_ARCHER_3_MAL, SBP.MALIAN.UNIT_MANSA_JAVELIN_3_MAL},
+			[4]={SBP.MALIAN.UNIT_ARCHER_4_MAL, SBP.MALIAN.UNIT_MANSA_JAVELIN_4_MAL, SBP.MALIAN.UNIT_HANDCANNON_4_MAL},
+		},
+		mongol = {
+			[1]={},
+			[2]={SBP.MONGOL.UNIT_ARCHER_2_MON},
+			[3]={SBP.MONGOL.UNIT_ARCHER_3_MON, SBP.MONGOL.UNIT_CROSSBOWMAN_3_MON},
+			[4]={SBP.MONGOL.UNIT_ARCHER_4_MON, SBP.MONGOL.UNIT_CROSSBOWMAN_4_MON, SBP.MONGOL.UNIT_HANDCANNON_4_MON},
+		},
+	},
+    Cavalry = {
+		abbasid = {
+			[1]={SBP.ABBASID.UNIT_SCOUT_1_ABB},
+			[2]={SBP.ABBASID.UNIT_HORSEMAN_2_ABB},
+			[3]={SBP.ABBASID.UNIT_HORSEMAN_3_ABB, SBP.ABBASID.UNIT_CAMEL_ARCHER_3_ABB, SBP.ABBASID.UNIT_CAMEL_RIDER_3_ABB},
+			[4]={SBP.ABBASID.UNIT_HORSEMAN_4_ABB, SBP.ABBASID.UNIT_CAMEL_ARCHER_4_ABB, SBP.ABBASID.UNIT_CAMEL_RIDER_4_ABB},
+		},
+		byzantine = {
+			[1]={},
+			[2]={SBP.BYZANTINE.UNIT_HORSEMAN_2_BYZ, SBP.BYZANTINE.UNIT_SIPAHI_2_BYZ},
+			[3]={SBP.BYZANTINE.UNIT_HORSEMAN_3_BYZ, SBP.BYZANTINE.UNIT_SIPAHI_3_BYZ, SBP.BYZANTINE.UNIT_HORSEARCHER_3_MERC_BYZ},
+			[4]={SBP.BYZANTINE.UNIT_HORSEMAN_4_BYZ, SBP.BYZANTINE.UNIT_SIPAHI_4_BYZ, SBP.BYZANTINE.UNIT_HORSEARCHER_4_MERC_BYZ, SBP.BYZANTINE.UNIT_WAR_ELEPHANT_TOWER_4_MERC_BYZ},
+		},
+		chinese = {
+			[1]={SBP.CHINESE.UNIT_SCOUT_1_CHI},
+			[2]={SBP.CHINESE.UNIT_HORSEMAN_2_CHI},
+			[3]={SBP.CHINESE.UNIT_HORSEMAN_3_CHI, SBP.CHINESE.UNIT_FIRELANCER_3_CHI},
+			[4]={SBP.CHINESE.UNIT_HORSEMAN_4_CHI, SBP.CHINESE.UNIT_FIRELANCER_4_CHI},
+		},
+		english = {
+			[1]={SBP.ENGLISH.UNIT_SCOUT_1_ENG},
+			[2]={SBP.ENGLISH.UNIT_HORSEMAN_2_ENG},
+			[3]={SBP.ENGLISH.UNIT_HORSEMAN_3_ENG, SBP.ENGLISH.UNIT_KNIGHT_3_ENG},
+			[4]={SBP.ENGLISH.UNIT_HORSEMAN_4_ENG, SBP.ENGLISH.UNIT_KNIGHT_4_ENG},
+		},
+		french = {
+			[1]={},
+			[2]={SBP.FRENCH.UNIT_HORSEMAN_2_FRE},
+			[3]={SBP.FRENCH.UNIT_HORSEMAN_3_FRE, SBP.FRENCH.UNIT_MANATARMS_3_FRE},
+			[4]={SBP.FRENCH.UNIT_HORSEMAN_4_FRE, SBP.FRENCH.UNIT_CROSSBOWMAN_4_FRE, SBP.FRENCH.UNIT_HANDCANNON_4_FRE},
+		},
+		japanese = {
+			[1]={},
+			[2]={SBP.JAPANESE.UNIT_HORSEMAN_2_JPN},
+			[3]={SBP.JAPANESE.UNIT_HORSEMAN_3_JPN, SBP.JAPANESE.UNIT_BANNER_SAMURAI_CAVALRY_3_JPN},
+			[4]={SBP.JAPANESE.UNIT_HORSEMAN_4_JPN, SBP.JAPANESE.UNIT_BANNER_SAMURAI_CAVALRY_4_JPN},
+		},
+		mongol = {
+			[1]={SBP.MONGOL.UNIT_HORSEMAN_1_MON},
+			[2]={SBP.MONGOL.UNIT_HORSEMAN_2_MON, SBP.MONGOL.UNIT_HORSEARCHER_2_MON},
+			[3]={SBP.MONGOL.UNIT_HORSEMAN_3_MON, SBP.MONGOL.UNIT_HORSEARCHER_3_MON},
+			[4]={SBP.MONGOL.UNIT_HORSEMAN_4_MON, SBP.MONGOL.UNIT_HORSEARCHER_4_MON},
+		},
+	},
+    Ram  = {
+		abbasid = {
+			[1]={},
+			[2]={SBP.ABBASID.UNIT_RAM_3_ABB},
+			[3]={SBP.ABBASID.UNIT_RAM_3_ABB},
+			[4]={SBP.ABBASID.UNIT_RAM_3_ABB},
+		},
+		byzantine = {
+			[1]={},
+			[2]={SBP.BYZANTINE.UNIT_RAM_3_BYZ},
+			[3]={SBP.BYZANTINE.UNIT_RAM_3_BYZ},
+			[4]={SBP.BYZANTINE.UNIT_RAM_3_BYZ, SBP.BYZANTINE.UNIT_RAM_FIRE_3_BYZ},
+		},
+		chinese = {
+			[1]={},
+			[2]={SBP.CHINESE.UNIT_RAM_3_CHI},
+			[3]={SBP.CHINESE.UNIT_RAM_3_CHI},
+			[4]={SBP.CHINESE.UNIT_RAM_3_CHI, SBP.CHINESE.UNIT_RAM_3_CLOCKTOWER_CHI},
+		},
+		english = {
+			[1]={},
+			[2]={SBP.ENGLISH.UNIT_RAM_3_ENG},
+			[3]={SBP.ENGLISH.UNIT_RAM_3_ENG},
+			[4]={SBP.ENGLISH.UNIT_RAM_3_ENG},
+		},
+		french = {
+			[1]={},
+			[2]={SBP.FRENCH.UNIT_RAM_3_FRE},
+			[3]={SBP.FRENCH.UNIT_RAM_3_FRE},
+			[4]={SBP.FRENCH.UNIT_RAM_3_FRE},
+		},
+		japanese = {
+			[1]={},
+			[2]={SBP.JAPANESE.UNIT_RAM_3_JPN},
+			[3]={SBP.JAPANESE.UNIT_RAM_3_JPN},
+			[4]={SBP.JAPANESE.UNIT_RAM_3_JPN},
+		},
+		mongol = {
+			[1]={},
+			[2]={SBP.MONGOL.UNIT_RAM_3_MON},
+			[3]={SBP.MONGOL.UNIT_RAM_3_MON},
+			[4]={SBP.MONGOL.UNIT_RAM_3_MON},
+		},
+	},
+    Siege = {
+		abbasid = {
+			[1]={},
+			[2]={},
+			[3]={SBP.ABBASID.UNIT_SPRINGALD_3_ABB, SBP.ABBASID.UNIT_MANGONEL_3_ABB},
+			[4]={SBP.ABBASID.UNIT_CULVERIN_4_ABB, SBP.ABBASID.UNIT_CANNON_4_ABB, SBP.ABBASID.UNIT_BOMBARD_4_ABB, SBP.ABBASID.UNIT_TREBUCHET_4_CW_ABB, SBP.ABBASID.UNIT_RIBAULDEQUIN_4_ABB},
+		},
+		byzantine = {
+			[1]={},
+			[2]={},
+			[3]={SBP.BYZANTINE.UNIT_SPRINGALD_3_BYZ},
+			[4]={SBP.BYZANTINE.UNIT_BOMBARD_4_BYZ, SBP.BYZANTINE.UNIT_CULVERIN_4_BYZ, SBP.BYZANTINE.UNIT_CANNON_4_BYZ, SBP.BYZANTINE.UNIT_RIBAULDEQUIN_4_BYZ},
+		},
+		chinese = {
+			[1]={},
+			[2]={},
+			[3]={SBP.CHINESE.UNIT_SPRINGALD_3_CHI, SBP.CHINESE.UNIT_MANGONEL_3_CHI},
+			[4]={SBP.CHINESE.UNIT_SPRINGALD_3_CHI, SBP.CHINESE.UNIT_MANGONEL_3_CLOCKTOWER_CHI, SBP.CHINESE.UNIT_NEST_OF_BEES_4_CHI, SBP.CHINESE.UNIT_BOMBARD_4_CHI, SBP.CHINESE.UNIT_TREBUCHET_4_CW_CLOCKTOWER_CHI},
+		},
+		english = {
+			[1]={},
+			[2]={},
+			[3]={SBP.ENGLISH.UNIT_SPRINGALD_3_ENG, SBP.ENGLISH.UNIT_MANGONEL_3_ENG},
+			[4]={SBP.ENGLISH.UNIT_CULVERIN_4_ENG, SBP.ENGLISH.UNIT_TREBUCHET_4_CW_ENG, SBP.ENGLISH.UNIT_BOMBARD_4_ENG, SBP.ENGLISH.UNIT_CANNON_4_ENG, SBP.ENGLISH.UNIT_RIBAULDEQUIN_4_ENG},
+		},
+		french = {
+			[1]={},
+			[2]={},
+			[3]={SBP.FRENCH.UNIT_SPRINGALD_3_FRE},
+			[4]={SBP.FRENCH.UNIT_CULVERIN_4_FRE, SBP.FRENCH.UNIT_CANNON_4_FRE, SBP.FRENCH.UNIT_TREBUCHET_4_CW_FRE, SBP.FRENCH.UNIT_BOMBARD_4_FRE, SBP.FRENCH.UNIT_RIBAULDEQUIN_4_FRE},
+		},
+		japanese = {
+			[1]={},
+			[2]={},
+			[3]={SBP.JAPANESE.UNIT_SPRINGALD_3_JPN},
+			[4]={SBP.JAPANESE.UNIT_CULVERIN_4_JPN, SBP.JAPANESE.UNIT_CANNON_4_JPN, SBP.JAPANESE.UNIT_TREBUCHET_4_CW_JPN, SBP.JAPANESE.UNIT_BOMBARD_4_JPN, SBP.JAPANESE.UNIT_RIBAULDEQUIN_4_JPN},
+		},
+		mongol = {
+			[1]={},
+			[2]={},
+			[3]={SBP.MONGOL.UNIT_SPRINGALD_3_MON},
+			[4]={SBP.MONGOL.UNIT_CULVERIN_4_MON, SBP.MONGOL.UNIT_CANNON_4_MON, SBP.MONGOL.UNIT_TREBUCHET_4_CW_MON, SBP.MONGOL.UNIT_BOMBARD_4_MON, SBP.MONGOL.UNIT_RIBAULDEQUIN_4_MON},
+		},
+	}
+}
+
+function getSquadBlueprint(role_name, tier, civ, count)
+	local selected_roles = UNIT_MAP[role_name]
+	PrintTable(selected_roles)
+	local civilization_units = selected_roles[civ]
+	PrintTable(civilization_units)
+	local civilization_units_tiered = civilization_units[tier]
+	
+	local grouped = {}   -- sbp -> count
+
+	for i = 1, count do
+		local chosen_unit = TableRandom(civilization_units_tiered)
+		print(tostring(chosen_unit))
+		if grouped[chosen_unit] then
+			grouped[chosen_unit] = grouped[chosen_unit] + 1
+		else
+			grouped[chosen_unit] = 1
+		end
+	end
+
+	-- Convert grouped results to array of { sbp = ..., numSquads = ... }
+	local result = {}
+	for sbp, num in pairs(grouped) do
+		table.insert(result, {
+			sbp = sbp,
+			numSquads = num
+		})
+	end
+
+	return result
+end

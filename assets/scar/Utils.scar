@@ -1,0 +1,74 @@
+-- Returns a float between min and max
+function RandomFloat(min, max)
+	local scale = World_GetRand(0, 10000) / 10000
+	return min + scale * (max - min)
+end
+
+-- Returns a random unit from pool, weighted by weights[unit]
+function WeightedRandomChoice(pool, weights)
+    local total = 0
+    for _, unit in ipairs(pool) do
+        total = total + (weights[unit] or 0)
+    end
+
+    local pick = World_GetRand(1, total)
+    local running = 0
+
+    for _, unit in ipairs(pool) do
+        running = running + (weights[unit] or 0)
+        if pick <= running then
+            return unit
+        end
+    end
+
+    return pool[1] -- fallback
+end
+
+function PrintTable(tbl, indent)
+	indent = indent or 0
+	local indentStr = string.rep("  ", indent)
+
+	for k, v in pairs(tbl) do
+		local keyStr = tostring(k)
+		if type(v) == "table" then
+			print(indentStr .. keyStr .. " = {")
+			PrintTable(v, indent + 1)
+			print(indentStr .. "}")
+		else
+			print(indentStr .. keyStr .. " = " .. tostring(v))
+		end
+	end
+	print(" ")
+end
+
+
+function TableSize(tbl)
+	local count = 0
+	for _ in pairs(tbl) do
+		count = count + 1
+	end
+	return count
+end
+
+function TableRandom(tbl)
+	local choice_count = TableSize(tbl)
+	local choice_index = World_GetRand(1,choice_count)
+	local choice = tbl[choice_index]
+
+	return choice
+end
+
+
+--Track Screen Messages
+_message = ""
+
+function ShowMessage(message)
+	_message = message
+	UI_SystemMessageShow(_message)
+	Rule_AddOneShot(HideMessage_OneShot, 5)
+end
+
+function HideMessage_OneShot()
+	UI_SystemMessageHide(_message)
+	_message = ""
+end

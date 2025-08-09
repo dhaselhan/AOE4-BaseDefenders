@@ -8,8 +8,9 @@
 				<d2p1:KeyValueOfstringArrayOfstringty7Ep6D1>
 					<d2p1:Key>AssetExplorerGeneric</d2p1:Key>
 					<d2p1:Value>
-						<d2p1:string>assets\locdb\Base Defenders_en.csv</d2p1:string>
+						<d2p1:string>assets\locdb</d2p1:string>
 						<d2p1:string>assets\scar\winconditions</d2p1:string>
+						<d2p1:string>assets\scar\Utils.scar</d2p1:string>
 					</d2p1:Value>
 				</d2p1:KeyValueOfstringArrayOfstringty7Ep6D1>
 			</d3p1:ExpandedPaths>
@@ -22,10 +23,12 @@
 	</PluginSettings>
 	<RecentFiles>
 		<History xmlns:d3p1="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
-			<d3p1:string>C:\Dev\AOE4\Base Defenders\assets\scar\winconditions\Base Defenders.rdo</d3p1:string>
+			<d3p1:string>C:\Dev\AOE4\Base Defenders\assets\scar\Utils.scar</d3p1:string>
 			<d3p1:string>C:\Dev\AOE4\Base Defenders\assets\locdb\Base Defenders.locdb</d3p1:string>
-			<d3p1:string>C:\Dev\AOE4\Base Defenders\assets\mod.rdo</d3p1:string>
+			<d3p1:string>C:\Dev\AOE4\Base Defenders\assets\scar\winconditions\Base Defenders.rdo</d3p1:string>
 			<d3p1:string>C:\Dev\AOE4\Base Defenders\assets\scar\Base Defenders.scar</d3p1:string>
+			<d3p1:string>C:\Dev\AOE4\Base Defenders\assets\scar\WaveGenerator.scar</d3p1:string>
+			<d3p1:string>C:\Dev\AOE4\Base Defenders\assets\mod.rdo</d3p1:string>
 		</History>
 	</RecentFiles>
 </ProjectSettings>
