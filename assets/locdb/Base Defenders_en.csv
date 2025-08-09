@@ -1,0 +1,14 @@
+﻿ID,Pipeline,PipelineStage,Notes,TranslationNotes,Tags,Text
+1,,,Mod name.,,,Base Defenders
+2,,,Mod description.,,,"Try and survive for as many waves of spawning enemies as you can!\r\n\r\nTeam 1 is Defenders, Team 2 is Attackers\r\nBe sure to check options before starting.\r\n\r\nCurrently support enemy civilizations:\r\nAbassid\r\nByzantine\r\nChinese\r\nEnglish\r\nFrench\r\nMongol\r\nJapanese"
+3,,,,,,Base Defenders
+4,,,,,,Economy
+5,,,,,,Resources Per Minute
+6,,,,,,The number of resources given to each player every minute
+7,,,,,,200 Resources
+8,,,,,,500 Resources
+9,,,,,,Each player gets 200 of each resource every minute
+10,,,,,,Each player gets 500 of each resource every minute
+11,,,,,,Construct 5 Houses
+12,,,,,,%1AMOUNT% of each resource added
+13,,,,,,"Try and survive for as many waves of spawning enemies as you can!\r\n\r\nTeam 1 is Defenders, Team 2 is Attackers\r\nBe sure to check options before starting.\r\n\r\nCurrently support enemy civilizations:\r\nAbassid\r\nByzantine\r\nChinese\r\nEnglish\r\nFrench\r\nMongol\r\nJapanese"
