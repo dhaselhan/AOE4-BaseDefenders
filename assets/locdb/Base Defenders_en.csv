@@ -4,7 +4,7 @@
 3,,,,,,Base Defenders
 4,,,,,,Wave Options
 5,,,,,,Resources Per Minute
-13,,,,,,"Try and survive for as many waves of spawning enemies as you can!\r\n\r\nTeam 1 is Defenders, Team 2 is Attackers\r\nBe sure to check options before starting.\r\n\r\nCurrently support enemy civilizations:\r\nAbassid\r\nByzantine\r\nChinese\r\nEnglish\r\nFrench\r\nMongol\r\nJapanese"
+13,,,,,,"Try and survive for as many waves of spawning enemies as you can.\r\n\r\nTeam 1 is Defenders, Team 2 is Attackers\r\nBe sure to check options before starting.\r\n\r\nTest first with 1 team of attackers before adding more, it can get difficult."
 14,,,,,,Max Waves
 15,,,,,,Enemy waves to Spawn
 16,,,,,,Total number of enemy waves to spawn before the defenders win

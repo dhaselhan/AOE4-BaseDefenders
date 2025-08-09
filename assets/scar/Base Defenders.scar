@@ -183,6 +183,15 @@ function SpawnNextWave()
 	local diff = 2 -- #TODO: Replace with dynamic difficulty logic or option
 	local tier = math.ceil(waveNumber / options_selected.GameFlow.MaxWaves * 4)
 	
+	-- Update Enemy Age as the game progresses
+	for i, enemy_player in pairs(PLAYERS) do
+		if Player_GetTeam(enemy_player.id) == 1 then
+			if Player_GetCurrentAge() < tier then
+				Player_SetCurrentAge(enemy_player, tier)
+			end
+		end
+	end
+	
 	print("Spawning Wave")
 
 	-- Spawn waves for each human player
@@ -195,8 +204,6 @@ function SpawnNextWave()
 			-- Each AI player sends attackers to this human
 			for j, enemy_player in pairs(PLAYERS) do
 				if Player_GetTeam(enemy_player.id) == 1 then
-					print("Team 2 Loop")
-					
 					local civ = Player_GetRaceName(enemy_player.id)
 					local sbp_table = WaveGenerator_GenerateSBPTable(waveNumber, tier, civ)
 					

@@ -3,23 +3,24 @@
   <RootPanel Orientation="Horizontal">
     <LayoutAnchorablePaneGroup Orientation="Horizontal" DockWidth="300" FloatingWidth="300" FloatingHeight="800" FloatingLeft="200" FloatingTop="200">
       <LayoutAnchorablePane DockHeight="200" FloatingWidth="300" FloatingHeight="800" FloatingLeft="200" FloatingTop="200">
-        <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Asset Explorer" IsSelected="True" ContentId="EssenceEditor.AssetExplorer" FloatingLeft="200" FloatingTop="200" FloatingWidth="300" FloatingHeight="800" LastActivationTimeStamp="08/09/2025 12:26:37" PreviousContainerId="1b84d0aa-3fd1-4781-909d-fa3e4b760d6d" PreviousContainerIndex="1" />
+        <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Asset Explorer" IsSelected="True" ContentId="EssenceEditor.AssetExplorer" FloatingLeft="200" FloatingTop="200" FloatingWidth="300" FloatingHeight="800" LastActivationTimeStamp="08/09/2025 14:12:59" PreviousContainerId="1b84d0aa-3fd1-4781-909d-fa3e4b760d6d" PreviousContainerIndex="1" />
       </LayoutAnchorablePane>
     </LayoutAnchorablePaneGroup>
     <LayoutPanel Orientation="Vertical">
       <LayoutDocumentPane>
         <LayoutDocument Title="Render" ContentId="EssenceEditor.Render" LastActivationTimeStamp="08/09/2025 12:19:54" />
-        <LayoutDocument Title="Base Defenders.rdo" ContentId="Reflect|Essence.Editor.ReflectEditor.Controls.DefaultReflectControlActivator|0x4BD0C8BA06D4FDF7" LastActivationTimeStamp="08/09/2025 12:26:57" />
-        <LayoutDocument Title="Base Defenders.scar" IsSelected="True" IsLastFocusedDocument="True" ContentId="FileName|Script|assets\scar\Base Defenders.scar" ToolTip="C:\Dev\AOE4\Base Defenders\assets\scar\Base Defenders.scar" LastActivationTimeStamp="08/09/2025 12:26:58" />
-        <LayoutDocument Title="Base Defenders.locdb" ContentId="FileName|LocDB|assets\locdb\Base Defenders.locdb" ToolTip="C:\Dev\AOE4\Base Defenders\assets\locdb\Base Defenders.locdb" LastActivationTimeStamp="08/09/2025 12:25:53" />
-        <LayoutDocument Title="WaveGenerator.scar" ContentId="FileName|Script|assets\scar\WaveGenerator.scar" ToolTip="C:\Dev\AOE4\Base Defenders\assets\scar\WaveGenerator.scar" LastActivationTimeStamp="08/09/2025 12:14:56" />
-        <LayoutDocument Title="Utils.scar" ContentId="FileName|Script|assets\scar\Utils.scar" ToolTip="C:\Dev\AOE4\Base Defenders\assets\scar\Utils.scar" LastActivationTimeStamp="08/09/2025 12:26:49" />
+        <LayoutDocument Title="Base Defenders.rdo" ContentId="Reflect|Essence.Editor.ReflectEditor.Controls.DefaultReflectControlActivator|0x4BD0C8BA06D4FDF7" LastActivationTimeStamp="08/09/2025 14:11:15" />
+        <LayoutDocument Title="Base Defenders.scar" ContentId="FileName|Script|assets\scar\Base Defenders.scar" ToolTip="C:\Dev\AOE4\Base Defenders\assets\scar\Base Defenders.scar" LastActivationTimeStamp="08/09/2025 14:51:36" />
+        <LayoutDocument Title="Base Defenders.locdb" ContentId="FileName|LocDB|assets\locdb\Base Defenders.locdb" ToolTip="C:\Dev\AOE4\Base Defenders\assets\locdb\Base Defenders.locdb" LastActivationTimeStamp="08/09/2025 13:20:19" />
+        <LayoutDocument Title="WaveGenerator.scar" IsSelected="True" IsLastFocusedDocument="True" ContentId="FileName|Script|assets\scar\WaveGenerator.scar" ToolTip="C:\Dev\AOE4\Base Defenders\assets\scar\WaveGenerator.scar" LastActivationTimeStamp="08/09/2025 14:52:45" />
+        <LayoutDocument Title="Utils.scar" ContentId="FileName|Script|assets\scar\Utils.scar" ToolTip="C:\Dev\AOE4\Base Defenders\assets\scar\Utils.scar" LastActivationTimeStamp="08/09/2025 13:20:46" />
       </LayoutDocumentPane>
-      <LayoutAnchorablePane Id="1b84d0aa-3fd1-4781-909d-fa3e4b760d6d" Name="anchorablesPane" DockHeight="300">
+      <LayoutAnchorablePane Id="1b84d0aa-3fd1-4781-909d-fa3e4b760d6d" Name="anchorablesPane" DockHeight="300.8">
         <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Output" ContentId="Output" LastActivationTimeStamp="07/28/2020 09:55:16" />
-        <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Error List" ContentId="ErrorList" LastActivationTimeStamp="07/28/2020 09:55:14" />
+        <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Error List" IsSelected="True" ContentId="ErrorList" LastActivationTimeStamp="08/09/2025 14:50:34" />
         <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Object Browser" ContentId="ScenarioEditor.ObjectBrowser" LastActivationTimeStamp="07/28/2020 09:55:15" />
-        <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Find References Results 1" IsSelected="True" ContentId="FindReferencesResults1" LastActivationTimeStamp="08/09/2025 12:17:11" />
+        <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Blueprint List" ContentId="ScenarioEditor.AssetBlueprint" LastActivationTimeStamp="08/09/2025 14:02:34" />
+        <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Find References Results 1" ContentId="FindReferencesResults1" LastActivationTimeStamp="08/09/2025 12:17:11" />
       </LayoutAnchorablePane>
     </LayoutPanel>
     <LayoutAnchorablePaneGroup Orientation="Vertical" DockWidth="300" DockHeight="200">
@@ -40,7 +41,7 @@
   <BottomSide />
   <FloatingWindows />
   <Hidden>
-    <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Transformation" IsSelected="True" ContentId="ScenarioEditor.Transformation" FloatingLeft="200" FloatingTop="200" FloatingWidth="250" FloatingHeight="300" LastActivationTimeStamp="08/09/2025 12:25:28" PreviousContainerId="78c06263-eb86-40c1-8abf-6d89a3781df0" PreviousContainerIndex="0" />
-    <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Painter" IsSelected="True" ContentId="ScenarioEditor.Painter" FloatingLeft="200" FloatingTop="200" FloatingWidth="300" FloatingHeight="800" LastActivationTimeStamp="08/09/2025 12:25:28" PreviousContainerId="53e1caa6-065a-4d2c-8593-864fd881c769" PreviousContainerIndex="1" />
+    <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Transformation" IsSelected="True" ContentId="ScenarioEditor.Transformation" FloatingLeft="200" FloatingTop="200" FloatingWidth="250" FloatingHeight="300" LastActivationTimeStamp="08/09/2025 14:51:30" PreviousContainerId="78c06263-eb86-40c1-8abf-6d89a3781df0" PreviousContainerIndex="0" />
+    <LayoutAnchorable AutoHideMinWidth="100" AutoHideMinHeight="100" Title="Painter" IsSelected="True" ContentId="ScenarioEditor.Painter" FloatingLeft="200" FloatingTop="200" FloatingWidth="300" FloatingHeight="800" LastActivationTimeStamp="08/09/2025 14:51:30" PreviousContainerId="53e1caa6-065a-4d2c-8593-864fd881c769" PreviousContainerIndex="1" />
   </Hidden>
 </LayoutRoot>
